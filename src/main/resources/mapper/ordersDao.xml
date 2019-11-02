@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 设置为IOrdersDao接口方法提供sql语句配置 -->
+<mapper namespace="com.zz.dao.IOrdersDao">
+    <!--添加订单-->
+    <insert id="addOrder" parameterType="Orders">
+        <selectKey keyProperty="oid" resultType="int" order="AFTER">
+            select LAST_INSERT_ID()
+        </selectKey>
+        insert into orders (total,ordertime,state,uid,ordernumber)
+        VALUES (#{total},#{ordertime},#{state},#{uid},#{ordernumber})
+    </insert>
+
+    <!--添加订单里面的姓名，电话，地址-->
+    <update id="addNPA" parameterType="OrdersExt">
+        UPDATE orders SET name=#{name},phone=#{phone},addr=#{addr} WHERE oid = #{oid}
+    </update>
+
+    <resultMap id="findOrderOk" type="OrdersExt">
+    <id column="oid" property="oid" />
+    <result column="total" property="total" />
+    <result column="uid" property="uid" />
+        <result column="name" property="name" />
+        <result column="phone" property="phone" />
+        <result column="addr" property="addr" />
+        <result column="ordernumber" property="ordernumber" />
+        <result column="ordertime" property="ordertime" />
+    <collection property="itemExts" ofType="OrderItemExt">
+        <id column="itemid" property="itemid" />
+        <result column="count" property="count" />
+        <result column="subtotal" property="subtotal" />
+        <association property="product" javaType="Product">
+            <id column="pid" property="pid" />
+            <result column="pname" property="pname" />
+            <result column="image" property="image" />
+            <result column="shopprice" property="shopprice" />
+        </association>
+    </collection>
+    </resultMap>
+
+    <!--打印订单-->
+    <select id="findOrder" parameterType="Integer" resultMap="findOrderOk">
+        select o.*,o.uid,oi.itemid,oi.count,oi.subtotal,p.pid,p.pname,p.image,p.shopprice
+        from orders o
+        INNER JOIN orderitem oi
+        on o.oid=oi.oid
+        INNER JOIN product p
+        on p.pid=oi.pid
+        where o.oid=#{oid}
+    </select>
+
+    <select id="getPageOid" parameterType="OrdersPage" resultType="Integer">
+        select o.oid
+        from orders o
+        where o.uid=#{uid}
+        order by o.ordertime DESC
+        limit #{pageall},#{pagesize}
+    </select>
+
+    <select id="getCountOid" parameterType="Integer" resultType="Integer">
+        select count(*)
+        from orders o
+        where o.uid=#{uid}
+    </select>
+
+    <update id="updateOrderState" parameterType="OrderState">
+        UPDATE orders set state=#{state} where oid=#{oid}
+    </update>
+</mapper>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 设置为categoryDao接口方法提供sql语句配置 -->
+<mapper namespace="com.zz.dao.IProductDao">
+    <select id="getProductById" resultType="Product" parameterType="Integer">
+        SELECT p.*
+        from categorysecond cs LEFT JOIN product p
+        on cs.csid = p.csid
+        where cs.csid = #{csid} and p.ishot=1
+        ORDER BY p.pdate DESC
+        LIMIT 8
+    </select>
+
+    <select id="getProductAllByCid" resultType="Product" parameterType="Page">
+        SELECT p.*
+        from category c INNER JOIN categorysecond cs
+        on c.cid= cs.cid
+        INNER JOIN product p
+        on cs.csid= p.csid
+        where c.cid = #{cid}
+        order by p.pid DESC
+        limit #{pageall},#{pagesize}
+    </select>
+    <select id="getCidTotal" parameterType="Page" resultType="Integer">
+        SELECT count(*)
+        from category c INNER JOIN categorysecond cs
+        on c.cid= cs.cid
+        INNER JOIN product p
+        on cs.csid= p.csid
+        where c.cid = #{cid}
+    </select>
+    <select id="getProductAllByCsid" resultType="Product" parameterType="Page">
+        SELECT p.*
+        from product p
+        <where>
+            <if test="csid!=0">
+                and p.csid = #{csid}
+            </if>
+            <if test="pnames!=null">
+                and p.pname like '%${pnames}%'
+            </if>
+        </where>
+        order by p.pid DESC
+        limit #{pageall},#{pagesize}
+    </select>
+    <select id="getCsidTotal" parameterType="Page" resultType="Integer">
+        SELECT count(*)
+        from product p
+        <where>
+            <if test="csid!=0">
+                and p.csid = #{csid}
+            </if>
+            <if test="pnames!=null">
+                and p.pname like '%${pnames}%'
+            </if>
+        </where>
+    </select>
+
+    <select id="getProductByPid" resultType="Product" parameterType="Integer">
+        select *
+        from product
+        where pid=#{pid}
+    </select>
+
+    <select id="hotProduct" resultType="Product">
+        select *
+        from product
+        where product.ishot=1
+        ORDER BY product.pid DESC
+        limit 3
+    </select>
+</mapper>

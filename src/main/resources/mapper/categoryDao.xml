@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 设置为categoryDao接口方法提供sql语句配置 -->
+<mapper namespace="com.zz.dao.ICategoryDao">
+    <!--Category CategorySecond Product三张表的对应关系-->
+    <resultMap id="allcategory" type="CategoryExt">
+        <!--主键的对应关系-->
+        <id column="cid" property="cid" />
+        <!--非主键的对应关系-->
+        <result column="cname" property="cname" />
+        <result column="order" property="order" />
+        <!--1:N N的一方的对应关系-->
+        <collection property="cslist" ofType="CategorySecondExt">
+            <!--主键的对应关系-->
+            <id column="csid" property="csid" />
+            <!--非主键的对应关系-->
+            <result column="csname" property="csname" />
+            <!--二级类目与商品表 1:N的关系-->
+            <collection property="proList" ofType="Product">
+                <!--主键的对应关系-->
+                <id column="pid" property="pid" />
+                <!--非主键的对应关系-->
+                <result column="pname" property="pname" />
+                <result column="marketprice" property="marketprice" />
+                <result column="shopprice" property="shopprice" />
+                <result column="image" property="image" />
+                <result column="ishot" property="ishot" />
+                <result column="pdate" property="pdate" />
+            </collection>
+        </collection>
+    </resultMap>
+
+    <select id="getAllCategory" resultMap="allcategory">
+        select c.cid,c.cname,cs.csname,cs.csid,c.order
+        from category c LEFT JOIN categorysecond cs
+        on c.cid=cs.cid
+        order by c.order
+    </select>
+
+    <select id="getDisplayCategoryAll" resultMap="allcategory">
+        SELECT c.cid,c.cname,cs.csname,cs.csid,c.order
+        from category c LEFT JOIN categorysecond cs
+        on c.cid=cs.cid
+        where c.appear=1 and cs.display=1
+        order by c.order
+    </select>
+
+    <select id="getCsid" resultType="Integer" parameterType="int">
+        select cs.csid
+        from category c INNER JOIN categorysecond cs
+        on c.cid=cs.cid
+        where c.cid = #{cid}
+    </select>
+</mapper>
